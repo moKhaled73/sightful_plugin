@@ -1,0 +1,1179 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      :root {
+        --main-color: #7406c2;
+        --pink: #c709fc;
+        --gradient: linear-gradient(100deg, var(--main-color), #c709fc);
+      }
+
+      body {
+        font-family: jetbrains mono, sans-serif;
+      }
+
+      main {
+        display: flex;
+        position: relative;
+      }
+
+      main .main-loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+      }
+
+      main .main-loading::before {
+        content: "";
+        width: 25px;
+        height: 25px;
+        border: 3px solid #eee;
+        border-radius: 50%;
+        border-top-color: var(--main-color);
+        border-bottom-color: var(--main-color);
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      .tabs {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-weight: bold;
+        margin: 0;
+        padding: 0;
+        border-right: 2px solid #bebcfe80;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        left: 0;
+      }
+
+      .tabs .logo {
+        width: 150px;
+        padding: 10px 10px 0;
+      }
+      .tabs li {
+        cursor: pointer;
+        padding: 10px 20px;
+        border-bottom: 2px solid #bebcfe80;
+      }
+
+      .tabs li:hover {
+        background-color: #bebcfe80;
+      }
+
+      .tabs li.active {
+        border-bottom: 2px solid var(--main-color);
+        background-color: #bebcfe80;
+      }
+
+      .models {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .models .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 15px;
+      }
+
+      .models .container .images {
+        border-radius: 10px;
+        position: relative;
+        display: flex;
+        gap: 15px;
+        overflow: hidden;
+        width: fit-content;
+        padding: 5px;
+        background-color: #eddfdf;
+      }
+
+      .container .image {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .container .image .info {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .container .image .info span {
+        background-color: var(--main-color);
+        color: white;
+        padding: 3px 6px;
+        border-radius: 3px;
+      }
+
+      .container .image .info i {
+        background-color: var(--main-color);
+        padding: 5px 8px;
+        text-align: center;
+        color: white;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .generate {
+        display: block;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-image: var(--gradient);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 512px;
+        margin: 0 auto;
+      }
+
+      .generate .loading {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 3px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: var(--main-color);
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .container .image .original-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
+        user-select: none;
+      }
+
+      .container .image .result-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
+        user-select: none;
+      }
+
+      .heatmap-image {
+        opacity: 0;
+        animation: fadeIn 5s forwards;
+      }
+
+      .container .image .slider {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translate(50%, -50%);
+        z-index: 3;
+        background-color: white;
+        width: 30px;
+        height: 30px;
+        padding: 3px;
+        border-radius: 50%;
+        cursor: ew-resize;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+
+        100% {
+          opacity: 0.5;
+        }
+      }
+
+      .scanpath-image {
+        object-fit: contain;
+      }
+
+      .recomm-con {
+        flex: 1;
+        align-items: flex-start;
+      }
+
+      .recomm-con .custom-prompt-con {
+        width: fit-content;
+        align-self: flex-end;
+      }
+
+      .recomm-con .guidelines,
+      .recomm-con .custom-prompt-con .custom-prompt {
+        align-self: flex-end;
+        padding: 5px;
+        border: 2px solid #ccc;
+        border-radius: 5px;
+        width: 400px;
+      }
+
+      .recomm-con .guidelines:focus,
+      .recomm-con .custom-prompt-con .custom-prompt:focus {
+        outline: none;
+        border: 2px solid #bebcfe80;
+      }
+
+      .recomm-con .custom-prompt-con .error {
+        display: none;
+        color: red;
+        margin: 5px 0 0;
+        font-size: 14px;
+      }
+
+      .recomm-con .images {
+        align-self: flex-end;
+      }
+
+      .recomm-con .result {
+        width: 100%;
+        margin-top: 20px;
+        border: 2px solid #bebcfe80;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+
+      .recomm-con .result .result-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 7px;
+        background-color: #e6e6e6;
+      }
+
+      .recomm-con .result .result-header h4 {
+        margin: 0;
+        color: #333;
+      }
+
+      .recomm-con .result .result-header button {
+        border: none;
+        background-color: white;
+        color: #333;
+        border-radius: 3px;
+        cursor: pointer;
+        padding: 2px 6px;
+      }
+
+      .recomm-con .result .content {
+        padding: 7px;
+      }
+
+      .recomm-con .result .content .placeholder {
+        padding: 0;
+        margin: 0;
+        font-weight: bold;
+        color: #917f7f;
+      }
+
+      .recomm-con .result .content * {
+        padding: revert;
+        margin: revert;
+      }
+
+      .recomm-con .result .content .recommendation-text {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+      }
+
+      .recomm-con .result .content .active {
+        background-color: #eee;
+        border-left: var(--main-color) 4px solid;
+        padding: 8px;
+      }
+    </style>
+    <title>InsightGaze Plugin</title>
+  </head>
+  <body>
+    <main>
+      <ul class="tabs">
+        <img
+          src="https://res.cloudinary.com/di8fpr6aq/image/upload/v1742988916/myfb7w58qbcd5grdu3nt.png"
+          alt=""
+          class="logo"
+        />
+        <li class="active" data-modelname="heatmap">Heatmap</li>
+        <li data-modelname="scanpath">Scanpath</li>
+        <li data-modelname="recommendations">Recommendations</li>
+      </ul>
+      <section class="models">
+        <div class="heatmap-con container">
+          <div class="images"></div>
+          <button class="generate generate-heatmap">Generate Heatmap</button>
+        </div>
+        <div class="scanpath-con container" style="display: none">
+          <div class="images"></div>
+          <button class="generate generate-scanpath">Generate Scanpath</button>
+        </div>
+        <div class="recomm-con container" style="display: none">
+          <select class="guidelines">
+            <option value="human interface guidelines">
+              Human Interface Guidelines
+            </option>
+            <option value="material design guidelines">
+              Material Design Guidelines
+            </option>
+            <option value="microsoft fluent design system">
+              Microsoft Fluent Design System
+            </option>
+            <option value="accessibility guidelines">
+              Accessibility Guidelines
+            </option>
+            <option value="platform specific guidelines">
+              Platform Specific Guidelines
+            </option>
+            <option value="custom-prompt">Custom Prompt</option>
+          </select>
+          <div class="custom-prompt-con" style="display: none">
+            <input
+              type="text"
+              class="custom-prompt"
+              placeholder="Enter Your Custom Prompt"
+            />
+            <p class="error">prompt is required</p>
+          </div>
+          <div class="images"></div>
+          <div class="result">
+            <div class="result-header">
+              <h4>recommendations</h4>
+              <button class="result-clear">clear</button>
+            </div>
+            <div class="content">
+              <p class="placeholder">the result will displayed here...</p>
+            </div>
+          </div>
+          <button class="generate generate-recomm">
+            Generate Recommendations
+          </button>
+        </div>
+      </section>
+      <div class="main-loading"></div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      const tabs = document.querySelectorAll(".tabs li");
+      const models = document.querySelector(".models");
+      const heatmapContainer = document.querySelector(".models  .heatmap-con");
+      const scanpathContainer = document.querySelector(".models .scanpath-con");
+      const recommContainer = document.querySelector(".models  .recomm-con");
+      const mainLoading = document.querySelector("main .main-loading");
+
+      let selectedTab = "heatmap";
+      let selectedImage = null;
+      let figmaStructure = null;
+      let boundingBox = null;
+      let heatmap3sURL = null;
+      let heatmap7sURL = null;
+      let scanpath = null;
+      let recommenationsRes = null;
+      let ourRecommenadtionsRes = null;
+
+      const API_URL = "http://localhost:8000";
+      const HEATMAP3S_API_URL = `${API_URL}/heatmap/heatmap3s`;
+      const HEATMAP7S_API_URL = `${API_URL}/heatmap/heatmap7s`;
+      const SCANPATH_API_URL = `${API_URL}/scanpath`;
+      const OUR_RECOMMENDATIONS_API_URL = `${API_URL}/recommendations/our_recommendations`;
+      const GENERATE_UI_RECOMMENDATIONS_API_URL = `${API_URL}/recommendations/gemini_recommendations`;
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", (e) => {
+          tabs.forEach((t) => t.classList.remove("active"));
+          e.target.classList.add("active");
+          selectedTab = e.target.dataset.modelname;
+          displaySelectedFrame();
+        });
+        if (tab.classList.contains("active")) {
+          selectedTab = tab.dataset.modelname;
+        }
+      });
+
+      window.onload = () => {
+        parent.postMessage(
+          { pluginMessage: { type: "getSelectedFrame" } },
+          "*"
+        );
+      };
+
+      window.onmessage = (event) => {
+        const { pluginMessage } = event.data;
+        if (pluginMessage.type === "selectedFrameData") {
+          selectedImage = pluginMessage.image;
+          figmaStructure = pluginMessage.layerStructure;
+          displaySelectedFrame();
+        }
+      };
+
+      function addOriginalImage(imageName, className, images, size) {
+        const image = document.createElement("div");
+        image.className = `image ${className}`;
+
+        if (className !== "recommendations") {
+          const info = document.createElement("div");
+          info.className = "info";
+
+          const imageNameSpan = document.createElement("span");
+          imageNameSpan.classList = "image-name";
+          imageNameSpan.innerHTML = imageName;
+          info.appendChild(imageNameSpan);
+
+          image.appendChild(info);
+        }
+        const img = document.createElement("img");
+        img.className = "original-image";
+        img.src = selectedImage;
+        img.draggable = false;
+
+        img.onload = () => {
+          if (img.naturalWidth >= img.naturalHeight) {
+            images.style.flexDirection = "column";
+            image.style.width = `${size}px`;
+            image.style.height = `${
+              (size / img.naturalWidth) * img.naturalHeight
+            }px`;
+          } else {
+            images.style.flexDirection = "row";
+            image.style.width = `${
+              (size / img.naturalHeight) * img.naturalWidth
+            }px`;
+            image.style.height = `${size}px`;
+          }
+        };
+
+        img.onerror = () => {
+          console.error("Error loading image.");
+        };
+
+        image.appendChild(img);
+        images.appendChild(image);
+        mainLoading.style.display = "none";
+      }
+
+      function base64ToFile(base64String, fileName) {
+        return new Promise((resolve, reject) => {
+          fetch(base64String)
+            .then((res) => res.arrayBuffer())
+            .then((buffer) => {
+              const blob = new Blob([buffer], { type: "image/png" });
+              const file = new File([blob], fileName, { type: "image/png" });
+              resolve(file);
+            })
+            .catch(reject);
+        });
+      }
+
+      function downloadReslutImage(resultImage, name) {
+        const canvas = document.createElement("canvas");
+        let ctx = canvas.getContext("2d");
+        // Load the original image
+        const originalImage = document.createElement("img");
+        originalImage.src = selectedImage;
+        originalImage.onload = () => {
+          // Set the canvas size based on the original image dimensions
+          canvas.width = resultImage.naturalWidth;
+          canvas.height = resultImage.naturalHeight;
+
+          // Draw the original image onto the canvas
+          ctx.drawImage(
+            originalImage,
+            0,
+            0,
+            resultImage.naturalWidth,
+            resultImage.naturalHeight
+          );
+
+          // Set opacity for the heatmap
+          if (/heatmap/.test(name)) ctx.globalAlpha = 0.5;
+
+          ctx.drawImage(
+            resultImage,
+            0,
+            0,
+            resultImage.naturalWidth,
+            resultImage.naturalHeight
+          );
+
+          // Reset global alpha to default (1) after drawing
+          ctx.globalAlpha = 1.0;
+
+          // Create a download link for the merged image
+          let link = document.createElement("a");
+          link.download = `${name}.png`;
+          link.href = canvas.toDataURL(); // Convert canvas to data URL
+          link.click();
+        };
+      }
+
+      function moveSlider(e) {
+        const slider = selectedSlider;
+        const container = selectedSlider.parentNode;
+        const topImage = selectedSlider.parentNode.lastElementChild;
+
+        const containerRect = container.getBoundingClientRect();
+        let x = containerRect.right - e.clientX;
+
+        // Ensure the slider does not go outside the container
+        if (x < 0) {
+          x = 0; // Prevent moving outside the left boundary
+        } else if (x > containerRect.width) {
+          x = containerRect.width;
+        }
+
+        // Set the position of the slider
+        slider.style.right = `${x}px`;
+
+        // Clip the top image based on the slider position
+        topImage.style.clipPath = `inset(0 ${x}px 0 0)`;
+      }
+
+      function addHeatmapResult(heatmapUrl, className) {
+        const heatmapImageCon = document.querySelector(
+          `.heatmap-con .images .${className}`
+        );
+        const heatmapInfo = document.querySelector(
+          `.heatmap-con .images .${className} .info`
+        );
+        const heatmapImage = document.createElement("img");
+        heatmapImage.draggable = false;
+        heatmapImage.className = "result-image heatmap-image";
+        heatmapImage.src = heatmapUrl;
+
+        // download heatmap
+        const downloadIcon = document.createElement("i");
+        downloadIcon.className = "fa-solid fa-download";
+        downloadIcon.addEventListener("click", (e) =>
+          downloadReslutImage(heatmapImage, className)
+        );
+        heatmapInfo.appendChild(downloadIcon);
+
+        // heatmap slider
+        const heatmapSlider = document.createElement("i");
+        heatmapSlider.className = "slider fa-solid fa-left-right";
+        heatmapSlider.addEventListener("mousedown", (e) => {
+          selectedSlider = e.target;
+          document.addEventListener("mousemove", moveSlider);
+          document.addEventListener("mouseup", () => {
+            document.removeEventListener("mousemove", moveSlider);
+          });
+        });
+        document
+          .querySelector(`.container .images .${className}`)
+          .appendChild(heatmapSlider);
+
+        heatmapImageCon.appendChild(heatmapImage);
+      }
+
+      function heatmapLogic() {
+        const heatmapImages = document.querySelector(
+          ".models .heatmap-con .images"
+        );
+        const generateHeatmapBtn = document.querySelector(
+          ".models .heatmap-con .generate-heatmap"
+        );
+
+        // display heatmap container
+        models.style.alignItems = "center";
+        heatmapContainer.style.display = "flex";
+        scanpathContainer.style.display = "none";
+        recommContainer.style.display = "none";
+
+        // clear images in the heatmap container if exist
+        heatmapImages.innerHTML = "";
+
+        // add original image
+        addOriginalImage("heatmap 3s", "heatmap3s", heatmapImages, 512);
+        addOriginalImage("heatmap 7s", "heatmap7s", heatmapImages, 512);
+
+        // if there is heatmaps display it else generate new
+        if (heatmap3sURL && heatmap7sURL) {
+          addHeatmapResult(heatmap3sURL, "heatmap3s");
+          addHeatmapResult(heatmap7sURL, "heatmap7s");
+        } else {
+          // generate heatmap logic
+          generateHeatmapBtn.addEventListener("click", async () => {
+            if (generateHeatmapBtn.classList.contains("close")) {
+              parent.postMessage(
+                { pluginMessage: { type: "close", status: "info" } },
+                "*"
+              );
+            } else {
+              try {
+                generateHeatmapBtn.innerHTML = `<span class='loading'></span>`;
+
+                const file = await base64ToFile(
+                  selectedImage,
+                  "selected-image.png"
+                );
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const res3s = await fetch(HEATMAP3S_API_URL, {
+                  method: "post",
+                  body: formData,
+                });
+                const res7s = await fetch(HEATMAP7S_API_URL, {
+                  method: "post",
+                  body: formData,
+                });
+
+                if (!res3s.ok || !res7s.ok) {
+                  parent.postMessage(
+                    { pluginMessage: { type: "close", status: "error" } },
+                    "*"
+                  );
+                  return;
+                }
+
+                const blob3s = await res3s.blob();
+                const blob7s = await res7s.blob();
+
+                heatmap3sURL = URL.createObjectURL(blob3s);
+                heatmap7sURL = URL.createObjectURL(blob7s);
+
+                addHeatmapResult(heatmap3sURL, "heatmap3s");
+                addHeatmapResult(heatmap7sURL, "heatmap7s");
+                generateHeatmapBtn.classList.add("close");
+                generateHeatmapBtn.innerHTML = "Try Another Design";
+              } catch (error) {
+                generateHeatmapBtn.innerHTML = "Generate Heatmap";
+              }
+            }
+          });
+        }
+      }
+
+      function addScanpathResult(scanpath) {
+        const scanpathImageCon = document.querySelector(
+          ".scanpath-con .images .scanpath"
+        );
+        const scanpathInfo = document.querySelector(
+          `.scanpath-con .images .scanpath .info`
+        );
+
+        // download scanpath
+        const downloadIcon = document.createElement("i");
+        downloadIcon.className = "fa-solid fa-download";
+        downloadIcon.addEventListener("click", (e) =>
+          downloadReslutImage(scanpathImage, className)
+        );
+        scanpathInfo.appendChild(downloadIcon);
+
+        // add the scanpath to the original image
+
+        const img = new Image();
+        img.src = selectedImage;
+
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.className = "result-image scanpath-image";
+          const ctx = canvas.getContext("2d");
+
+          // Set canvas size to match image
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          // Draw the image on the canvas
+          ctx.drawImage(img, 0, 0, img.width, img.height);
+
+          // Draw the scanpath lines first
+          ctx.strokeStyle = "blue"; // Line color
+          ctx.lineWidth = 4;
+
+          for (let i = 1; i < scanpath.length; i++) {
+            let [_, __, ___, ____, prevX, prevY, _____] = scanpath[i - 1];
+            let [______, width, height, _______, x, y, timestamp] = scanpath[i];
+
+            ctx.beginPath();
+            ctx.moveTo(prevX, prevY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+          }
+
+          // Draw gaze points on top
+          for (let i = 0; i < scanpath.length; i++) {
+            let [_, width, height, __, x, y, timestamp] = scanpath[i];
+
+            ctx.beginPath();
+            if (i === 0) {
+              ctx.fillStyle = "green"; // First point (start)
+            } else if (i === scanpath.length - 1) {
+              ctx.fillStyle = "red"; // Last point (end)
+            } else {
+              ctx.fillStyle = "blue"; // Middle points
+            }
+            ctx.arc(x, y, 7, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          scanpathImageCon.appendChild(canvas);
+        };
+      }
+
+      function scanpathLogic() {
+        const scanpathImages = document.querySelector(
+          ".models .scanpath-con .images"
+        );
+        const generateScanpathBtn = document.querySelector(
+          ".models .scanpath-con .generate-scanpath"
+        );
+
+        // display scanpath container
+        models.style.alignItems = "center";
+        heatmapContainer.style.display = "none";
+        scanpathContainer.style.display = "flex";
+        recommContainer.style.display = "none";
+
+        // clear images in the heatmap container if exist
+        scanpathImages.innerHTML = "";
+
+        // add original image
+        addOriginalImage("scanpath", "scanpath", scanpathImages, 512);
+
+        // if there is heatmaps display it else generate new
+        if (scanpath) {
+          addScanpathResult(scanpath);
+        } else {
+          // generate scanpath logic
+          generateScanpathBtn.addEventListener("click", async () => {
+            if (generateScanpathBtn.classList.contains("close")) {
+              parent.postMessage(
+                { pluginMessage: { type: "close", status: "info" } },
+                "*"
+              );
+            } else {
+              try {
+                generateScanpathBtn.innerHTML = `<span class='loading'></span>`;
+
+                const file = await base64ToFile(
+                  selectedImage,
+                  "selected-image.png"
+                );
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const res = await fetch(SCANPATH_API_URL, {
+                  method: "post",
+                  body: formData,
+                });
+
+                if (!res.ok) {
+                  parent.postMessage(
+                    { pluginMessage: { type: "close", status: "error" } },
+                    "*"
+                  );
+                }
+
+                const jsonRes = await res.json();
+
+                scanpath = jsonRes.scanpath;
+
+                addScanpathResult(jsonRes.scanpath);
+                generateScanpathBtn.innerHTML = "Try Another Design";
+                generateScanpathBtn.classList.add("close");
+              } catch (error) {
+                parent.postMessage(
+                  { pluginMessage: { type: "close", status: "error" } },
+                  "*"
+                );
+              }
+            }
+          });
+        }
+      }
+
+      function displayRecommendation(recommendations) {
+        const resultContainer = document.querySelector(
+          ".recomm-con .result .content"
+        );
+
+        resultContainer.innerHTML = ""; // Clear previous content
+
+        // Parse the recommendation text using marked.js into HTML
+        const parsedHTML = marked.parse(recommendations);
+
+        let index = 0;
+
+        function typeChar() {
+          if (index < parsedHTML.length) {
+            // Get the substring of parsed HTML up to the current index
+            resultContainer.innerHTML = parsedHTML.substring(0, index + 1);
+            index++;
+
+            // Adjust delay for typing speed (you can change 30 to make it faster/slower)
+            setTimeout(typeChar, 1);
+          }
+        }
+
+        // Start the typing effect
+        typeChar();
+      }
+
+      function displayOurRecommendation(recommendations) {
+        const resultContainer = document.querySelector(
+          ".recomm-con .result .content"
+        );
+
+        resultContainer.innerHTML = ""; // Clear previous content
+
+        recommendations.forEach((recommendation, index) => {
+          const recommendationText = document.createElement("p");
+          recommendationText.className = "recommendation-text";
+          recommendationText.setAttribute(
+            "data-bounding",
+            recommendation.bounding_box
+          );
+          if (index === 0) {
+            recommendationText.classList.add("active");
+            boundingBox = recommendation.bounding_box;
+            addBoundingBox(boundingBox);
+          }
+          recommendationText.innerHTML = recommendation.text;
+          resultContainer.appendChild(recommendationText);
+        });
+        const recommendationTexts = document.querySelectorAll(
+          ".recomm-con .result p"
+        );
+
+        recommendationTexts.forEach((recommtext) => {
+          recommtext.addEventListener("click", (e) => {
+            recommendationTexts.forEach((rt) => {
+              rt.classList.remove("active");
+            });
+            e.currentTarget.classList.add("active");
+            boundingBox = e.currentTarget.dataset.bounding;
+            addBoundingBox(boundingBox.split(","));
+          });
+        });
+      }
+
+      function addBoundingBox(boundingBox) {
+        const recommendationImage = document.querySelector(
+          ".models .recomm-con .images .recommendations"
+        );
+        const recommendationOriginalImage = document.querySelector(
+          ".models .recomm-con .images .recommendations .original-image"
+        );
+
+        const existingBoundingSpan = document.querySelector(
+          ".models .recomm-con .images .recommendations .bounding-box"
+        );
+
+        if (existingBoundingSpan) {
+          existingBoundingSpan.remove();
+        }
+
+        const boundingSpan = document.createElement("span");
+        boundingSpan.className = "bounding-box";
+        boundingSpan.style.position = "absolute";
+        boundingSpan.style.border = "2px solid red";
+        boundingSpan.style.left = `${
+          boundingBox[0] * recommendationOriginalImage.width
+        }px`;
+        boundingSpan.style.top = `${
+          boundingBox[1] * recommendationOriginalImage.height
+        }px`;
+        boundingSpan.style.width = `${
+          boundingBox[2] * recommendationOriginalImage.width -
+          boundingBox[0] * recommendationOriginalImage.width
+        }px`;
+        boundingSpan.style.height = `${
+          boundingBox[3] * recommendationOriginalImage.height -
+          boundingBox[1] * recommendationOriginalImage.height
+        }px`;
+        recommendationImage.appendChild(boundingSpan);
+      }
+
+      // clear result function
+      function clearResult() {
+        const generateRecommBtn = document.querySelector(
+          ".models .recomm-con .generate-recomm"
+        );
+        const resultContainer = document.querySelector(
+          ".recomm-con .result .content"
+        );
+
+        resultContainer.innerHTML = "";
+
+        // create the placeholder and add to result container
+        const placeholder = document.createElement("p");
+        placeholder.className = "placeholder";
+        placeholder.innerHTML = "the result will displayed here...";
+        resultContainer.appendChild(placeholder);
+
+        // update generate button text
+        generateRecommBtn.innerHTML = "Generate Recommendations";
+        generateRecommBtn.classList.remove("close");
+
+        // remove bounding box if exist
+        const existingBoundingSpan = document.querySelector(
+          ".models .recomm-con .images .recommendations .bounding-box"
+        );
+        if (existingBoundingSpan) {
+          existingBoundingSpan.remove();
+        }
+      }
+
+      // draw bounding box if select guideline is custom prompt
+      function drawBoundingBox(selectedGuideline, coordinations) {
+        if (selectedGuideline == "custom-prompt") {
+          const imageContainer = document.querySelector(
+            ".recomm-con .images .recommendations"
+          );
+          const originalImage = document.querySelector(
+            ".recomm-con .images .recommendations .original-image"
+          );
+          const box = document.createElement("div");
+          box.className = "bounding-box";
+          box.style.position = "absolute";
+          box.style.border = "2px solid red";
+          box.style.pointerEvents = "none";
+
+          imageContainer.style.cursor = "crosshair";
+
+          let startX,
+            startY,
+            boxX,
+            boxY,
+            boxWidth,
+            boxHeight,
+            isDrawing = false;
+
+          imageContainer.addEventListener("mousedown", (e) => {
+            const rect = originalImage.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            box.style.left = `${startX}px`;
+            box.style.top = `${startY}px`;
+            box.style.width = "0px";
+            box.style.height = "0px";
+            imageContainer.appendChild(box);
+            isDrawing = true;
+          });
+
+          imageContainer.addEventListener("mousemove", (e) => {
+            if (!isDrawing) return;
+            const rect = originalImage.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            boxWidth = Math.abs(x - startX);
+            boxHeight = Math.abs(y - startY);
+            box.style.width = `${boxWidth}px`;
+            box.style.height = `${boxHeight}px`;
+            box.style.left = `${Math.min(x, startX)}px`;
+            box.style.top = `${Math.min(y, startY)}px`;
+          });
+
+          imageContainer.addEventListener("mouseup", () => {
+            isDrawing = false;
+            boxX = parseInt(box.style.left);
+            boxY = parseInt(box.style.top);
+            coordinations.map((el) => coordinations.pop());
+            coordinations.push(boxX);
+            coordinations.push(boxY);
+            coordinations.push(boxWidth);
+            coordinations.push(boxHeight);
+          });
+        }
+      }
+
+      function recommendationLogic() {
+        const generateRecommBtn = document.querySelector(
+          ".models .recomm-con .generate-recomm"
+        );
+        const customPromptContainer = document.querySelector(
+          ".recomm-con .custom-prompt-con"
+        );
+        const customPrompt = document.querySelector(
+          ".recomm-con .custom-prompt-con .custom-prompt"
+        );
+        const customPromptError = document.querySelector(
+          ".recomm-con .custom-prompt-con .error"
+        );
+        const recommImages = document.querySelector(".recomm-con .images");
+        const guidelines = document.querySelector(".recomm-con .guidelines");
+
+        const clearReslutBtn = document.querySelector(
+          ".recomm-con .result .result-header button "
+        );
+
+        let selectedGuideline = "human interface guidelines";
+        let coordinations = [];
+
+        // display recommendation container
+        models.style.alignItems = "flex-start";
+        heatmapContainer.style.display = "none";
+        scanpathContainer.style.display = "none";
+        recommContainer.style.display = "flex";
+
+        // handle guideline change
+        guidelines.addEventListener("change", (e) => {
+          clearResult();
+          if (e.target.value == "custom-prompt") {
+            customPromptContainer.style.display = "block";
+            customPromptError.style.display = "none";
+          } else {
+            customPromptContainer.style.display = "none";
+          }
+          selectedGuideline = e.target.value;
+          coordinations = [];
+          drawBoundingBox(selectedGuideline, coordinations);
+        });
+
+        // handle clear result button
+        clearReslutBtn.addEventListener("click", (e) => {
+          clearResult();
+        });
+
+        // handle custom prompt input
+        customPrompt.addEventListener("input", (e) => {
+          if (customPrompt.value.trim() === "") {
+            customPromptError.style.display = "block";
+          } else {
+            customPromptError.style.display = "none";
+          }
+        });
+
+        // clear images in the heatmap container if exist
+        recommImages.innerHTML = "";
+
+        // add original image
+        addOriginalImage(
+          "Recommendations",
+          "recommendations",
+          recommImages,
+          400
+        );
+
+        if (recommenationsRes) {
+          displayRecommendation(recommenationsRes);
+        } else if (ourRecommenadtionsRes) {
+          displayOurRecommendation(ourRecommenadtionsRes);
+        } else {
+          // generate scanpath logic
+          generateRecommBtn.addEventListener("click", async (e) => {
+            if (generateRecommBtn.classList.contains("close")) {
+              parent.postMessage(
+                { pluginMessage: { type: "close", status: "info" } },
+                "*"
+              );
+            } else {
+              try {
+                generateRecommBtn.innerHTML = `<span class='loading'></span>`;
+                const file = await base64ToFile(
+                  selectedImage,
+                  "selected-image.png"
+                );
+
+                if (selectedGuideline == "custom-prompt") {
+                  console.log(coordinations);
+                  if (customPrompt.value.trim() === "") {
+                    customPromptError.style.display = "block";
+                    generateRecommBtn.innerHTML = "Generate Recommendations";
+                    return;
+                  }
+                  const formData = new FormData();
+                  formData.append("image", file);
+                  formData.append("prompt", customPrompt.value);
+
+                  const res = await fetch(GENERATE_UI_RECOMMENDATIONS_API_URL, {
+                    method: "post",
+                    body: formData,
+                  });
+
+                  if (!res.ok) {
+                    parent.postMessage(
+                      { pluginMessage: { type: "close", status: "error" } },
+                      "*"
+                    );
+                  }
+
+                  const recommendations = await res.json();
+                  recommenationsRes = recommendations.recommendations;
+                  displayRecommendation(recommenationsRes);
+                } else {
+                  const formData = new FormData();
+                  formData.append("image", file);
+                  formData.append("guideline", selectedGuideline);
+
+                  const res = await fetch(OUR_RECOMMENDATIONS_API_URL, {
+                    method: "post",
+                    body: formData,
+                  });
+
+                  if (!res.ok) {
+                    parent.postMessage(
+                      { pluginMessage: { type: "close", status: "error" } },
+                      "*"
+                    );
+                  }
+
+                  const recommendations = await res.json();
+                  ourRecommenadtionsRes = recommendations.recommendations;
+                  displayOurRecommendation(ourRecommenadtionsRes);
+                }
+                generateRecommBtn.innerHTML = "Try Another Design";
+                generateRecommBtn.classList.add("close");
+              } catch (error) {
+                parent.postMessage(
+                  { pluginMessage: { type: "close", status: "error" } },
+                  "*"
+                );
+              }
+            }
+          });
+        }
+      }
+
+      function displaySelectedFrame() {
+        if (selectedTab === "heatmap") {
+          heatmapLogic();
+        } else if (selectedTab === "scanpath") {
+          scanpathLogic();
+        } else if (selectedTab === "recommendations") {
+          recommendationLogic();
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "sightful",
+  "id": "1415664969918693477",
+  "api": "1.0.0",
+  "ui": "./ui.html",
+  "main": "code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "documentAccess": "dynamic-page",
+  "editorType": [
+    "figma",
+    "figjam"
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "http://localhost:8000",
+      "https://res.cloudinary.com",
+      "https://cdnjs.cloudflare.com",
+      "https://test-api-git-main-mohamed-khaleds-projects-a009ea96.vercel.app",
+      "https://i.pinimg.com",
+      "https://cdn.jsdelivr.net",
+      "https://www.gravatar.com"
+    ],
+    "reasoning": "This plugin needs to access APIs hosted on localhost and Vercel for testing and generating recommendations.",
+    "devAllowedDomains": [
+      "http://localhost:8000",
+      "https://test-api-git-main-mohamed-khaleds-projects-a009ea96.vercel.app"
+    ]
+  }
+}
