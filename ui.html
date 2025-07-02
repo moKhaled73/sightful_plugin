@@ -229,6 +229,39 @@
         object-fit: contain;
       }
 
+      .scores-con .inner-container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .scores-con .inner-container .results {
+        width: 450px;
+      }
+
+      .scores-con .inner-container .results .score {
+        margin-bottom: 20px;
+      }
+
+      .scores-con .inner-container .results .score .score-name {
+        font-size: 15px;
+        margin-bottom: 7px;
+      }
+
+      .scores-con .inner-container .results .score .outer-bar {
+        background-color: #f1f1f1;
+        border-radius: 5px;
+      }
+
+      .scores-con .inner-container .results .score .outer-bar .inner-bar {
+        background-color: var(--pink);
+        text-align: center;
+        color: white;
+        padding: 3px;
+        font-size: 14px;
+        border-radius: 5px;
+      }
+
       .recomm-con {
         flex: 1;
         align-items: flex-start;
@@ -335,6 +368,7 @@
         />
         <li class="active" data-modelname="heatmap">Heatmap</li>
         <li data-modelname="scanpath">Scanpath</li>
+        <li data-modelname="scores">Scores</li>
         <li data-modelname="recommendations">Recommendations</li>
       </ul>
       <section class="models">
@@ -345,6 +379,13 @@
         <div class="scanpath-con container" style="display: none">
           <div class="images"></div>
           <button class="generate generate-scanpath">Generate Scanpath</button>
+        </div>
+        <div class="scores-con container" style="display: none">
+          <div class="inner-container">
+            <div class="images"></div>
+            <div class="results"></div>
+          </div>
+          <button class="generate generate-scores">Generate scores</button>
         </div>
         <div class="recomm-con container" style="display: none">
           <select class="guidelines">
@@ -396,23 +437,26 @@
       const models = document.querySelector(".models");
       const heatmapContainer = document.querySelector(".models  .heatmap-con");
       const scanpathContainer = document.querySelector(".models .scanpath-con");
+      const scoresContainer = document.querySelector(".models .scores-con");
       const recommContainer = document.querySelector(".models  .recomm-con");
       const mainLoading = document.querySelector("main .main-loading");
 
       let selectedTab = "heatmap";
       let selectedImage = null;
       let figmaStructure = null;
-      let boundingBox = null;
       let heatmap3sURL = null;
       let heatmap7sURL = null;
       let scanpath = null;
+      let scores = null;
       let recommenationsRes = null;
       let ourRecommenadtionsRes = null;
+      let boundingBox = null;
 
       const API_URL = "http://localhost:8000";
       const HEATMAP3S_API_URL = `${API_URL}/heatmap/heatmap3s`;
       const HEATMAP7S_API_URL = `${API_URL}/heatmap/heatmap7s`;
       const SCANPATH_API_URL = `${API_URL}/scanpath`;
+      const SCORES_API_URL = `${API_URL}/scores`;
       const OUR_RECOMMENDATIONS_API_URL = `${API_URL}/recommendations/our_recommendations`;
       const GENERATE_UI_RECOMMENDATIONS_API_URL = `${API_URL}/recommendations/gemini_recommendations`;
 
@@ -615,14 +659,15 @@
         models.style.alignItems = "center";
         heatmapContainer.style.display = "flex";
         scanpathContainer.style.display = "none";
+        scoresContainer.style.display = "none";
         recommContainer.style.display = "none";
 
         // clear images in the heatmap container if exist
         heatmapImages.innerHTML = "";
 
         // add original image
-        addOriginalImage("heatmap 3s", "heatmap3s", heatmapImages, 512);
-        addOriginalImage("heatmap 7s", "heatmap7s", heatmapImages, 512);
+        addOriginalImage("Heatmap 3s", "heatmap3s", heatmapImages, 512);
+        addOriginalImage("Heatmap 7s", "heatmap7s", heatmapImages, 512);
 
         // if there is heatmaps display it else generate new
         if (heatmap3sURL && heatmap7sURL) {
@@ -762,13 +807,14 @@
         models.style.alignItems = "center";
         heatmapContainer.style.display = "none";
         scanpathContainer.style.display = "flex";
+        scoresContainer.style.display = "none";
         recommContainer.style.display = "none";
 
         // clear images in the heatmap container if exist
         scanpathImages.innerHTML = "";
 
         // add original image
-        addOriginalImage("scanpath", "scanpath", scanpathImages, 512);
+        addOriginalImage("Scanpath", "scanpath", scanpathImages, 512);
 
         // if there is heatmaps display it else generate new
         if (scanpath) {
@@ -816,6 +862,111 @@
                   { pluginMessage: { type: "close", status: "error" } },
                   "*"
                 );
+              }
+            }
+          });
+        }
+      }
+
+      function addScoresResult(scores) {
+        const results = document.querySelector(
+          ".models .scores-con .inner-container .results"
+        );
+        results.innerHTML = "";
+
+        for (const score in scores) {
+          const scoreDiv = document.createElement("div");
+          scoreDiv.className = "score";
+
+          const scoreName = document.createElement("p");
+          scoreName.className = "score-name";
+          scoreName.innerHTML = score
+            .split("_")
+            .map((el) => el[0].toLocaleUpperCase() + el.slice(1))
+            .slice(0, -1)
+            .join(" ");
+
+          scoreDiv.appendChild(scoreName);
+
+          const outerBar = document.createElement("div");
+          outerBar.className = "outer-bar";
+
+          const innerBar = document.createElement("div");
+          innerBar.className = "inner-bar";
+          innerBar.innerHTML = `${Math.round(scores[score])}%`;
+          innerBar.style.width = `${Math.round(scores[score])}%`;
+
+          outerBar.appendChild(innerBar);
+
+          scoreDiv.appendChild(outerBar);
+
+          results.appendChild(scoreDiv);
+        }
+      }
+
+      function scoresLogic() {
+        const scoresImages = document.querySelector(
+          ".models .scores-con .inner-container .images"
+        );
+
+        const generateScoresBtn = document.querySelector(
+          ".models .scores-con .generate-scores"
+        );
+
+        // display heatmap container
+        models.style.alignItems = "center";
+        heatmapContainer.style.display = "none";
+        scanpathContainer.style.display = "none";
+        scoresContainer.style.display = "flex";
+        recommContainer.style.display = "none";
+
+        // clear images in the heatmap container if exist
+        scoresImages.innerHTML = "";
+
+        // add original image
+        addOriginalImage("Scores", "scores", scoresImages, 512);
+
+        if (scores) {
+          addScoresResult(scores);
+        } else {
+          generateScoresBtn.addEventListener("click", async () => {
+            if (generateScoresBtn.classList.contains("close")) {
+              parent.postMessage(
+                { pluginMessage: { type: "close", status: "info" } },
+                "*"
+              );
+            } else {
+              try {
+                generateScoresBtn.innerHTML = `<span class='loading'></span>`;
+
+                const file = await base64ToFile(
+                  selectedImage,
+                  "selected-image.png"
+                );
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const res = await fetch(SCORES_API_URL, {
+                  method: "post",
+                  body: formData,
+                });
+
+                if (!res.ok) {
+                  parent.postMessage(
+                    { pluginMessage: { type: "close", status: "error" } },
+                    "*"
+                  );
+                  return;
+                }
+
+                scores = await res.json();
+
+                addScoresResult(scores);
+                generateScoresBtn.classList.add("close");
+                generateScoresBtn.innerHTML = "Try Another Design";
+              } catch (error) {
+                generateScoresBtn.innerHTML = "Generate Heatmap";
               }
             }
           });
@@ -924,7 +1075,6 @@
         recommendationImage.appendChild(boundingSpan);
       }
 
-      // clear result function
       function clearResult() {
         const generateRecommBtn = document.querySelector(
           ".models .recomm-con .generate-recomm"
@@ -954,7 +1104,6 @@
         }
       }
 
-      // draw bounding box if select guideline is custom prompt
       function drawBoundingBox(selectedGuideline, coordinations) {
         if (selectedGuideline == "custom-prompt") {
           const imageContainer = document.querySelector(
@@ -1044,6 +1193,7 @@
         models.style.alignItems = "flex-start";
         heatmapContainer.style.display = "none";
         scanpathContainer.style.display = "none";
+        scoresContainer.style.display = "none";
         recommContainer.style.display = "flex";
 
         // handle guideline change
@@ -1170,6 +1320,8 @@
           heatmapLogic();
         } else if (selectedTab === "scanpath") {
           scanpathLogic();
+        } else if (selectedTab === "scores") {
+          scoresLogic();
         } else if (selectedTab === "recommendations") {
           recommendationLogic();
         }
